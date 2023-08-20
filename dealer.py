@@ -32,9 +32,6 @@ class Dealer:
         player_cards = []
         for player in self.players:
             c1, c2 = self.deck.pick(), self.deck.pick()
-            # just for testing split
-            c1 = Card(Suite.S_SPADES, CardValue.V_ACE)
-            c2 = Card(Suite.S_DIAMONDS, CardValue.V_ACE)
             player_cards.append([c1, c2])
 
             self.show_to_others(c1, player)
