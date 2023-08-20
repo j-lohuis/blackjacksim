@@ -8,6 +8,7 @@ import numpy as np
 # V = Value
 # Ace = 0, 2 = 1, ..., Jack = 10, Queen = 11, King = 12
 
+
 class CardValue(Enum):
     V_ACE = 0
     V_2 = 1
@@ -26,7 +27,7 @@ class CardValue(Enum):
 
 class Suite(Enum):
     S_SPADES = 0b00_0000
-    S_DIAMONGS = 0b01_0000
+    S_DIAMONDS = 0b01_0000
     S_CLUBS = 0b10_0000
     S_HEARTS = 0b11_0000
 
@@ -63,19 +64,19 @@ class Card:
 
     def value(self) -> int:
         match (self.card & 0b00_1111):
-            case 0: return 11;
-            case 1: return 2;
-            case 2: return 3;
-            case 3: return 4;
-            case 4: return 5;
-            case 5: return 6;
-            case 6: return 7;
-            case 7: return 8;
-            case 8: return 9;
-            case 9: return 10;
-            case 10: return 10;
-            case 11: return 10;
-            case 12: return 10;
+            case 0: return 11
+            case 1: return 2
+            case 2: return 3
+            case 3: return 4
+            case 4: return 5
+            case 5: return 6
+            case 6: return 7
+            case 7: return 8
+            case 8: return 9
+            case 9: return 10
+            case 10: return 10
+            case 11: return 10
+            case 12: return 10
 
 
 class Deck:
@@ -101,6 +102,7 @@ class Deck:
         card = self.cards[self.top]
         self.top += 1
         return card
+
 
 def score(cards) -> int:
     result = 0

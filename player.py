@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum
 from deck import *
 
+
 class Action(Enum):
     HIT = 0
     STAND = 1
@@ -31,11 +32,11 @@ class CLI_Player(Player):
         Player.__init__(self, budget)
 
     def see_card(self, card: Card) -> None:
-        print(f"Seen card {card}");
+        print(f"Seen card {card}")
 
     def decide(self, cards, dealer_card: Card) -> Action:
         print(f"Dealers card: {dealer_card}")
-        print(f"Your hand ({score(cards)}):");
+        print(f"Your hand ({score(cards)}):")
         for card in cards:
             print(card)
 
@@ -87,4 +88,3 @@ class CLI_Player(Player):
 
         print(f"Your score: {score(player_cards)}")
         print(f"Dealer's score: {score(dealer_cards)}")
-
