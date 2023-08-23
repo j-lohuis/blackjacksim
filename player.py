@@ -262,12 +262,6 @@ class Card_Counter(Optimal_Player):
         self.budget -= bet
         return bet
 
-    def result(self, winnings: int, player_cards, dealer_cards) -> None:
-        for card in dealer_cards:
-            self.count(card)
-        debug(f"... Budget={self.budget}")
-        Optimal_Player.result(self, winnings, player_cards, dealer_cards)
-
     def on_shuffle(self) -> None:
         self.score = 0
         self.left_decks = self.num_decks-1

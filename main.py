@@ -8,7 +8,9 @@ def main():
     player = Card_Counter(1000, 6)
     dealer = Dealer(deck, [player])
 
-    dealer.play(1000)
+    dealer.play(100000)
+
+    print(f"Total winnings: {player.budget-1000}")
 
 
 if __name__ == '__main__':
