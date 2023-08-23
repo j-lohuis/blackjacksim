@@ -108,38 +108,38 @@ class Optimal_Player(Player):
 
     def decide(self, cards, dealer_card: Card) -> Action:
         hand_value = score(cards)
-        if hand_value == 21:
-            return Action.STAND
+
+        strat = None
 
         # check for splits
         if len(cards) == 2 and cards[0].value() == cards[1].value():
             match cards[0].value():
-                case 11 | 8: return Action.SPLIT
+                case 11 | 8: strat = Action.SPLIT
                 case 9:
                     if dealer_card.value() <= 9 and dealer_card != 7:
-                        return Action.SPLIT
+                        strat = Action.SPLIT
                     else:
-                        return Action.STAND
+                        strat = Action.STAND
                 case 7 | 3 | 2:
                     if dealer_card.value() <= 7:
-                        return Action.SPLIT
+                        strat = Action.SPLIT
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 6:
                     if dealer_card.value() <= 6:
-                        return Action.SPLIT
+                        strat = Action.SPLIT
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 5:
                     if dealer_card.value() <= 9:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 4:
                     if 5 <= dealer_card.value() <= 6:
-                        return Action.SPLIT
+                        strat = Action.SPLIT
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
 
         # soft totals and hard totals
         value_sum = sum(card.value() for card in cards)
@@ -147,64 +147,70 @@ class Optimal_Player(Player):
         if value_sum - hand_value != num_aces * 10:
             # soft totals
             match hand_value:
-                case 20: return Action.STAND
+                case 20: strat = Action.STAND
                 case 19:
                     if dealer_card.value() == 6:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.STAND
+                        strat = Action.STAND
                 case 18:
                     if 2 <= dealer_card.value() <= 6:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     elif 9 <= dealer_card.value():
-                        return Action.HIT
+                        strat = Action.HIT
                     else:
-                        return Action.STAND
+                        strat = Action.STAND
                 case 17:
                     if 3 <= dealer_card.value() <= 6:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 16 | 15:
                     if 4 <= dealer_card.value() <= 6:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 14 | 13:
                     if 5 <= dealer_card.value() <= 6:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
         else:
             # hard totals
             match hand_value:
                 case 20 | 19 | 18 | 17:
-                    return Action.STAND
+                    strat = Action.STAND
                 case 16 | 15 | 14 | 13:
                     if 2 <= dealer_card.value() <= 6:
-                        return Action.STAND
+                        strat = Action.STAND
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 12:
                     if 4 <= dealer_card.value() <= 6:
-                        return Action.STAND
+                        strat = Action.STAND
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 11:
-                    return Action.DOUBLE_DOWN
+                    strat = Action.DOUBLE_DOWN
                 case 10:
                     if 2 <= dealer_card.value() <= 9:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
                 case 9:
                     if 3 <= dealer_card.value() <= 6:
-                        return Action.DOUBLE_DOWN
+                        strat = Action.DOUBLE_DOWN
                     else:
-                        return Action.HIT
+                        strat = Action.HIT
             if hand_value <= 8:
-                return Action.HIT
-        print("Something went wrong, this should not happen")
+                strat = Action.HIT
+
+        if strat == Action.SPLIT and self.budget < 100:
+            return Action.STAND
+        elif strat == Action.DOUBLE_DOWN and self.budget < 100:
+            return Action.HIT
+        else:
+            return strat
 
     def bet(self) -> int:
         bet = 100
@@ -261,7 +267,7 @@ class Card_Counter(Optimal_Player):
             self.count(card)
         debug(f"... Budget={self.budget}")
         Optimal_Player.result(self, winnings, player_cards, dealer_cards)
-    
+
     def on_shuffle(self) -> None:
         self.score = 0
         self.left_decks = self.num_decks-1
