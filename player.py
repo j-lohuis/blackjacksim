@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from deck import *
+from debug import *
 
 
 class Action(Enum):
@@ -24,6 +25,9 @@ class Player(object):
         raise NotImplementedError("bet not implemented")
 
     def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        raise NotImplementedError("result not implemented")
+
+    def on_shuffle(self) -> None:
         raise NotImplementedError("result not implemented")
 
 
@@ -89,10 +93,13 @@ class CLI_Player(Player):
         print(f"Your score: {score(player_cards)}")
         print(f"Dealer's score: {score(dealer_cards)}")
 
+    def on_shuffle(self) -> None:
+        print("Deck was shuffled")
+
 
 # implemented after rules from
 # https://www.blackjackapprenticeship.com/blackjack-strategy-charts/
-class Optimal_Player(object):
+class Optimal_Player(Player):
     def __init__(self, budget: int) -> None:
         Player.__init__(self, budget)
 
@@ -206,3 +213,56 @@ class Optimal_Player(object):
 
     def result(self, winnings: int, player_cards, dealer_cards) -> None:
         self.budget += winnings
+
+    def on_shuffle(self) -> None:
+        pass
+
+
+class Card_Counter(Optimal_Player):
+    def __init__(self, budget: int, num_decks: int) -> None:
+        Optimal_Player.__init__(self, budget)
+        self.score = 0
+        self.num_decks = num_decks
+        self.left_decks = self.num_decks-1
+        self.seen_cards = 0
+
+    def count(self, card: Card) -> None:
+        self.seen_cards += 1
+
+        if self.seen_cards == 52:
+            self.seen_cards = 0
+            self.left_decks -= 1
+
+        if card.value() <= 6:
+            self.score += 1
+        elif card.value() >= 10:
+            self.score -= 1
+        else:
+            pass
+
+    def see_card(self, card: Card) -> None:
+        self.count(card)
+
+    def bet(self) -> int:
+        debug(f"....... Score={self.score}")
+        if self.score <= 0:
+            debug(f"....... not betting")
+            return 0
+
+        num_decks = 1 if self.num_decks == 0 else self.num_decks
+        bet = 100 * int(self.score / num_decks)
+        debug(f"....... true score = {self.score / num_decks}")
+        debug(f"....... betting {bet}")
+        self.budget -= bet
+        return bet
+
+    def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        for card in dealer_cards:
+            self.count(card)
+        debug(f"... Budget={self.budget}")
+        Optimal_Player.result(self, winnings, player_cards, dealer_cards)
+    
+    def on_shuffle(self) -> None:
+        self.score = 0
+        self.left_decks = self.num_decks-1
+        self.seen_cards = 0

@@ -103,6 +103,9 @@ class Deck:
         self.top += 1
         return card
 
+    def should_shuffle(self) -> bool:
+        return self.top > self.stop_card_index
+
 
 def score(cards) -> int:
     result = 0

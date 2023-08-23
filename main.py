@@ -5,10 +5,10 @@ from player import *
 
 def main():
     deck = Deck(6, 0.75)
-    player = Optimal_Player(1000)
+    player = Card_Counter(1000, 6)
     dealer = Dealer(deck, [player])
 
-    dealer.play_round()
+    dealer.play(1000)
 
 
 if __name__ == '__main__':
