@@ -5,12 +5,13 @@ from player import *
 
 def main():
     deck = Deck(6, 0.75)
-    player = Card_Counter(1000, 6)
+    # player = Card_Counter(1000, 6)
+    player = AveragePlayer(1000)
     dealer = Dealer(deck, [player])
 
-    dealer.play(100000)
+    dealer.play(20)
 
-    print(f"Total winnings: {player.budget-1000}")
+    print(f"Total winnings: {player.budget-100000}")
 
 
 if __name__ == '__main__':

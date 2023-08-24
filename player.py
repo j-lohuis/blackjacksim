@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum
 from deck import *
 from debug import *
+import random
 
 
 class Action(Enum):
@@ -266,3 +267,99 @@ class Card_Counter(Optimal_Player):
         self.score = 0
         self.left_decks = self.num_decks-1
         self.seen_cards = 0
+
+
+class RandomPlayer(Player):
+    def __init__(self, budget: int) -> None:
+        Player.__init__(self, budget)
+        self.last_bet = 0
+
+    def see_card(self, card: Card) -> None:
+        pass
+
+    def decide(self, cards, dealer_card: Card) -> Action:
+        if self.last_bet > self.budget:
+
+            return random.choice([Action.HIT, Action.STAND])
+
+        else:
+            if len(cards) == 2 and cards[0].value() == cards[1].value():
+                return random.choice(list(Action))
+            else:
+                return random.choice([Action.HIT, Action.STAND, Action.DOUBLE_DOWN])
+
+    def bet(self) -> int:
+        self.last_bet = random.randint(0, min([200, self.budget]))
+        self.budget -= self.last_bet
+
+        return self.last_bet
+
+    def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        self.budget += winnings
+
+    def on_shuffle(self) -> None:
+        pass
+
+
+class AveragePlayer(Player):
+    def __init__(self, budget: int) -> None:
+        Player.__init__(self, budget)
+        self.mood = "average"
+        self.last_bet = 100
+        self.last_result = "draw"
+
+    def see_card(self, card: Card) -> None:
+        pass
+
+    def decide(self, cards, dealer_card: Card) -> Action:
+        # careful if overshot last round
+        # more risky if lost last round
+        # normal if won last round
+        threshold = 16
+        actions = []
+        match(self.mood):
+            case 'average':
+                pass
+            case 'careful':
+                threshold -= 3
+            case 'risky':
+                threshold += 2
+                if score(cards) == 11 and self.last_bet <= self.budget:
+                    return Action.DOUBLE_DOWN
+        if score(cards) <= threshold:
+            return Action.HIT
+        else:
+            return Action.STAND
+
+    def bet(self) -> int:
+
+        match(self.last_result):
+            case "lose":
+                self.last_bet = min([2*self.last_bet, self.budget])
+            case "win":
+                self.last_bet = min([100, self.budget])
+            case "draw":
+                self.last_bet = min([self.last_bet, self.budget])
+
+        self.budget -= self.last_bet
+        return self.last_bet
+
+    # simulate basic behaviour based on results of last round
+    def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        if score(player_cards) > 21:
+            self.mood = "careful"
+            self.last_result = "lose"
+        elif score(player_cards) <= 21 and winnings == 0:
+            self.mood = "risky"
+            self.last_result = "lose"
+        if winnings == self.last_bet:
+            self.mood = "average"
+            self.last_result = "draw"
+        elif winnings > self.last_bet:
+            self.last_result = "win"
+            # if they won, they keep the last decision style (mood), because it 'worked'
+
+        self.budget += winnings
+
+    def on_shuffle(self) -> None:
+        pass
