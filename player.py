@@ -13,7 +13,8 @@ class Action(Enum):
 
 
 class Player(object):
-    def __init__(self, budget: int) -> None:
+    def __init__(self, name: str, budget: int) -> None:
+        self.name = name
         self.budget = budget
 
     def see_card(self, card: Card) -> None:
@@ -34,7 +35,7 @@ class Player(object):
 
 class CLI_Player(Player):
     def __init__(self, budget: int) -> None:
-        Player.__init__(self, budget)
+        Player.__init__(self, "CLI", budget)
 
     def see_card(self, card: Card) -> None:
         print(f"Seen card {card}")
@@ -78,7 +79,6 @@ class CLI_Player(Player):
                     print("You cannot bet a negative amout")
                     continue
 
-                self.budget -= bet
                 return bet
             except ValueError:
                 pass
@@ -102,7 +102,7 @@ class CLI_Player(Player):
 # https://www.blackjackapprenticeship.com/blackjack-strategy-charts/
 class Optimal_Player(Player):
     def __init__(self, budget: int) -> None:
-        Player.__init__(self, budget)
+        Player.__init__(self, "Optimal Player", budget)
 
     def see_card(self, card: Card) -> None:
         pass
@@ -214,9 +214,7 @@ class Optimal_Player(Player):
             return strat
 
     def bet(self) -> int:
-        bet = 100
-        self.budget -= bet
-        return bet
+        return 100
 
     def result(self, winnings: int, player_cards, dealer_cards) -> None:
         self.budget += winnings
@@ -224,14 +222,24 @@ class Optimal_Player(Player):
     def on_shuffle(self) -> None:
         pass
 
+#                   0   1   2   3   4   5   6   7   8   9  10  11
+STRAT_HI_LO     = [ 0,  0, +1, +1, +1, +1, +1,  0,  0,  0, -1, -1 ]
+STRAT_HI_OPTI   = [ 0,  0,  0, +1, +1, +1, +1,  0,  0,  0, -1,  0 ]
+STRAT_HI_OPTII  = [ 0,  0, +1, +1, +2, +2, +1,  0,  0,  0, -2,  0 ]
+STRAT_KO        = [ 0,  0, +1, +1, +1, +1, +1, +1,  0,  0, -1, -1 ]
+STRAT_OMEGAII   = [ 0,  0, +1, +1, +2, +2, +2, +1,  0, -1, -2,  0 ]
+STRAT_ZEN_COUNT = [ 0,  0, +1, +1, +2, +2, +2, +1,  0,  0, -2, -1 ]
+STRAT_10_COUNT  = [ 0,  0, +1, +1, +1, +1, +1, +1, +1, +1, -2, +1 ]
 
 class Card_Counter(Optimal_Player):
-    def __init__(self, budget: int, num_decks: int) -> None:
+    def __init__(self, name: str, budget: int, num_decks: int, strat) -> None:
         Optimal_Player.__init__(self, budget)
+        self.name = name
         self.score = 0
         self.num_decks = num_decks
         self.left_decks = self.num_decks-1
         self.seen_cards = 0
+        self.strat = strat
 
     def count(self, card: Card) -> None:
         self.seen_cards += 1
@@ -240,27 +248,17 @@ class Card_Counter(Optimal_Player):
             self.seen_cards = 0
             self.left_decks -= 1
 
-        if card.value() <= 6:
-            self.score += 1
-        elif card.value() >= 10:
-            self.score -= 1
-        else:
-            pass
+        self.score += self.strat[card.value()]
 
     def see_card(self, card: Card) -> None:
         self.count(card)
 
     def bet(self) -> int:
-        debug(f"....... Score={self.score}")
         if self.score <= 0:
-            debug(f"....... not betting")
             return 0
 
         num_decks = 1 if self.num_decks == 0 else self.num_decks
         bet = 100 * int(self.score / num_decks)
-        debug(f"....... true score = {self.score / num_decks}")
-        debug(f"....... betting {bet}")
-        self.budget -= bet
         return bet
 
     def on_shuffle(self) -> None:
@@ -271,7 +269,7 @@ class Card_Counter(Optimal_Player):
 
 class RandomPlayer(Player):
     def __init__(self, budget: int) -> None:
-        Player.__init__(self, budget)
+        Player.__init__(self, "Random Player", budget)
         self.last_bet = 0
 
     def see_card(self, card: Card) -> None:
@@ -290,7 +288,6 @@ class RandomPlayer(Player):
 
     def bet(self) -> int:
         self.last_bet = random.randint(0, min([200, self.budget]))
-        self.budget -= self.last_bet
 
         return self.last_bet
 
@@ -303,7 +300,7 @@ class RandomPlayer(Player):
 
 class AveragePlayer(Player):
     def __init__(self, budget: int) -> None:
-        Player.__init__(self, budget)
+        Player.__init__(self, "Average Player", budget)
         self.mood = "average"
         self.last_bet = 100
         self.last_result = "draw"
@@ -341,7 +338,6 @@ class AveragePlayer(Player):
             case "draw":
                 self.last_bet = min([self.last_bet, self.budget])
 
-        self.budget -= self.last_bet
         return self.last_bet
 
     # simulate basic behaviour based on results of last round
