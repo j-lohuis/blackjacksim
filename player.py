@@ -3,6 +3,7 @@ from enum import Enum
 from deck import *
 from debug import *
 import random
+import sys
 
 
 class Action(Enum):
@@ -36,6 +37,7 @@ class Player(object):
 class CLI_Player(Player):
     def __init__(self, budget: int) -> None:
         Player.__init__(self, "CLI", budget)
+        self.last_bet = 0
 
     def see_card(self, card: Card) -> None:
         print(f"Seen card {card}")
@@ -60,18 +62,36 @@ class CLI_Player(Player):
                 match num:
                     case 0: return Action.HIT
                     case 1: return Action.STAND
-                    case 2: return Action.DOUBLE_DOWN
-                    case 3: return Action.SPLIT
+                    case 2:
+                        if self.budget < self.last_bet:
+                            print("You do not have the budget to double down")
+                            continue
+                        if len(cards) != 2:
+                            print("Doubling down is disallowed after hit.")
+                            continue
+                        return Action.DOUBLE_DOWN
+                    case 3:
+                        if self.budget < self.last_bet:
+                            print("You do not have the budget to split")
+                            continue
+                        if len(cards) != 2 or cards[0].value() != cards[1].value():
+                            print("You cannot split.")
+                            continue
+                        return Action.SPLIT
+
             except ValueError:
                 pass
             print("Try again")
 
     def bet(self) -> int:
         while True:
-            print(f"Place a bet, your current budget is {self.budget}:")
+            print(
+                f"Place a bet, your current budget is {self.budget} or bet 0 to leave table:")
             try:
                 bet = int(input())
-                print(f"got input {bet}")
+                if bet == 0:
+                    print(f"Left table.\nTotal winnings: {self.budget-1000}")
+                    sys.exit(0)
                 if bet > self.budget:
                     print("You don't have that much money")
                     continue
@@ -79,6 +99,7 @@ class CLI_Player(Player):
                     print("You cannot bet a negative amout")
                     continue
 
+                self.last_bet = bet
                 return bet
             except ValueError:
                 pass
@@ -115,32 +136,32 @@ class Optimal_Player(Player):
         # check for splits
         if len(cards) == 2 and cards[0].value() == cards[1].value():
             match cards[0].value():
-                case 11 | 8: strat = Action.SPLIT
+                case 11 | 8: return Action.SPLIT
                 case 9:
                     if dealer_card.value() <= 9 and dealer_card != 7:
-                        strat = Action.SPLIT
+                        return Action.SPLIT
                     else:
-                        strat = Action.STAND
+                        return Action.STAND
                 case 7 | 3 | 2:
                     if dealer_card.value() <= 7:
-                        strat = Action.SPLIT
+                        return Action.SPLIT
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 6:
                     if dealer_card.value() <= 6:
-                        strat = Action.SPLIT
+                        return Action.SPLIT
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 5:
                     if dealer_card.value() <= 9:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 4:
                     if 5 <= dealer_card.value() <= 6:
-                        strat = Action.SPLIT
+                        return Action.SPLIT
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
 
         # soft totals and hard totals
         value_sum = sum(card.value() for card in cards)
@@ -148,70 +169,65 @@ class Optimal_Player(Player):
         if value_sum - hand_value != num_aces * 10:
             # soft totals
             match hand_value:
-                case 20: strat = Action.STAND
+                case 20: return Action.STAND
                 case 19:
                     if dealer_card.value() == 6:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.STAND
+                        return Action.STAND
                 case 18:
                     if 2 <= dealer_card.value() <= 6:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     elif 9 <= dealer_card.value():
-                        strat = Action.HIT
+                        return Action.HIT
                     else:
-                        strat = Action.STAND
+                        return Action.STAND
                 case 17:
                     if 3 <= dealer_card.value() <= 6:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 16 | 15:
                     if 4 <= dealer_card.value() <= 6:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 14 | 13:
                     if 5 <= dealer_card.value() <= 6:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
         else:
             # hard totals
             match hand_value:
                 case 20 | 19 | 18 | 17:
-                    strat = Action.STAND
+                    return Action.STAND
                 case 16 | 15 | 14 | 13:
                     if 2 <= dealer_card.value() <= 6:
-                        strat = Action.STAND
+                        return Action.STAND
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 12:
                     if 4 <= dealer_card.value() <= 6:
-                        strat = Action.STAND
+                        return Action.STAND
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 11:
-                    strat = Action.DOUBLE_DOWN
+                    return Action.DOUBLE_DOWN
                 case 10:
                     if 2 <= dealer_card.value() <= 9:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
                 case 9:
                     if 3 <= dealer_card.value() <= 6:
-                        strat = Action.DOUBLE_DOWN
+                        return Action.DOUBLE_DOWN
                     else:
-                        strat = Action.HIT
+                        return Action.HIT
             if hand_value <= 8:
-                strat = Action.HIT
+                return Action.HIT
 
-        if strat == Action.SPLIT and self.budget < 100:
-            return Action.STAND
-        elif strat == Action.DOUBLE_DOWN and self.budget < 100:
-            return Action.HIT
-        else:
-            return strat
+        raise ValueError("Impossible Hand")
 
     def bet(self) -> int:
         return 100
@@ -222,14 +238,16 @@ class Optimal_Player(Player):
     def on_shuffle(self) -> None:
         pass
 
-#                   0   1   2   3   4   5   6   7   8   9  10  11
-STRAT_HI_LO     = [ 0,  0, +1, +1, +1, +1, +1,  0,  0,  0, -1, -1 ]
-STRAT_HI_OPTI   = [ 0,  0,  0, +1, +1, +1, +1,  0,  0,  0, -1,  0 ]
-STRAT_HI_OPTII  = [ 0,  0, +1, +1, +2, +2, +1,  0,  0,  0, -2,  0 ]
-STRAT_KO        = [ 0,  0, +1, +1, +1, +1, +1, +1,  0,  0, -1, -1 ]
-STRAT_OMEGAII   = [ 0,  0, +1, +1, +2, +2, +2, +1,  0, -1, -2,  0 ]
-STRAT_ZEN_COUNT = [ 0,  0, +1, +1, +2, +2, +2, +1,  0,  0, -2, -1 ]
-STRAT_10_COUNT  = [ 0,  0, +1, +1, +1, +1, +1, +1, +1, +1, -2, +1 ]
+
+# Cardvalues   0   1   2   3   4   5   6   7   8   9  10  11
+STRAT_HI_LO = [0,  0, +1, +1, +1, +1, +1,  0,  0,  0, -1, -1]
+STRAT_HI_OPTI = [0,  0,  0, +1, +1, +1, +1,  0,  0,  0, -1,  0]
+STRAT_HI_OPTII = [0,  0, +1, +1, +2, +2, +1,  0,  0,  0, -2,  0]
+STRAT_KO = [0,  0, +1, +1, +1, +1, +1, +1,  0,  0, -1, -1]
+STRAT_OMEGAII = [0,  0, +1, +1, +2, +2, +2, +1,  0, -1, -2,  0]
+STRAT_ZEN_COUNT = [0,  0, +1, +1, +2, +2, +2, +1,  0,  0, -2, -1]
+STRAT_10_COUNT = [0,  0, +1, +1, +1, +1, +1, +1, +1, +1, -2, +1]
+
 
 class Card_Counter(Optimal_Player):
     def __init__(self, name: str, budget: int, num_decks: int, strat) -> None:
@@ -276,18 +294,13 @@ class RandomPlayer(Player):
         pass
 
     def decide(self, cards, dealer_card: Card) -> Action:
-        if self.last_bet > self.budget:
-
-            return random.choice([Action.HIT, Action.STAND])
-
+        if len(cards) == 2 and cards[0].value() == cards[1].value():
+            return random.choice(list(Action))
         else:
-            if len(cards) == 2 and cards[0].value() == cards[1].value():
-                return random.choice(list(Action))
-            else:
-                return random.choice([Action.HIT, Action.STAND, Action.DOUBLE_DOWN])
+            return random.choice([Action.HIT, Action.STAND, Action.DOUBLE_DOWN])
 
     def bet(self) -> int:
-        self.last_bet = random.randint(0, min([200, self.budget]))
+        self.last_bet = random.randint(0, 1000)
 
         return self.last_bet
 
@@ -321,7 +334,7 @@ class AveragePlayer(Player):
                 threshold -= 3
             case 'risky':
                 threshold += 2
-                if score(cards) == 11 and self.last_bet <= self.budget:
+                if score(cards) == 11:
                     return Action.DOUBLE_DOWN
         if score(cards) <= threshold:
             return Action.HIT
@@ -332,11 +345,11 @@ class AveragePlayer(Player):
 
         match(self.last_result):
             case "lose":
-                self.last_bet = min([2*self.last_bet, self.budget])
+                self.last_bet = 2*self.last_bet
             case "win":
-                self.last_bet = min([100, self.budget])
+                self.last_bet = 100
             case "draw":
-                self.last_bet = min([self.last_bet, self.budget])
+                self.last_bet = self.last_bet
 
         return self.last_bet
 
