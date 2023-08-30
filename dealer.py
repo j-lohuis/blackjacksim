@@ -40,20 +40,10 @@ class Dealer:
         i = 0
         while i < len(hands):
             if score(hands[i]) >= 21:
-                if score(hands[i]) == 21 and i == 0 and len(hands) == 1:
-                    potential_winnings[i] = int(1.25 * potential_winnings[i])
+                if score(hands[i]) == 21 and i == 0 and len(hands) == 1 and len(hands[0]) == 2:
+                    potential_winnings[i] = int(1.5 * potential_winnings[i])
                 i += 1
                 continue
-
-            # auto split on two aces
-            # if hands[i][0].value() == 11 and hands[i][0].value() == hands[i][1].value():
-            #     hands.insert(i+1, [hands[i].pop()])
-            #     hands[i].append(self.deal(player))
-            #     hands[i+1].append(self.deal(player))
-            #     potential_winnings.append(bet)
-            #     player.budget -= bet
-            #     i += 2
-            #     continue
 
             decision = player.decide(hands[i], self.dealer_cards[0])
             debug(f"..... Decision={decision}")
@@ -68,10 +58,18 @@ class Dealer:
                     player.budget -= bet
                     i += 1
                 case Action.SPLIT:
-                    hands.append([hands[i].pop(), self.deal(player)])
-                    hands[i].append(self.deal(player))
-                    potential_winnings.append(bet)
-                    player.budget -= bet
+                    if hands[i][0].value() == 11 and hands[i][0].value() == hands[i][1].value():
+                        hands.insert(i+1, [hands[i].pop()])
+                        hands[i].append(self.deal(player))
+                        hands[i+1].append(self.deal(player))
+                        potential_winnings.insert(i+1, bet)
+                        player.budget -= bet
+                        i += 2
+                    else:
+                        hands.append([hands[i].pop(), self.deal(player)])
+                        hands[i].append(self.deal(player))
+                        potential_winnings.append(bet)
+                        player.budget -= bet
 
         return (hands, potential_winnings)
 
@@ -132,6 +130,8 @@ class Dealer:
                 player_score = score(hands_and_wins[i][0][j])
                 debug(f"... Player = {hands_and_wins[i][0][j]} ({player_score})")
                 result = self.player_won(player_score, dealer_score)
+                if dealer_score == 21 and len(self.dealer_cards) == 2:
+                    result = 2 if player_score == 21 and len(hands_and_wins[i][0][j]) == 2 else 0
                 winnings = 0
                 match result:
                     case 0:
