@@ -6,6 +6,7 @@ import sys
 
 
 class Action(Enum):
+    """All possible game decisions a player can make"""
     HIT = 0
     STAND = 1
     DOUBLE_DOWN = 2
@@ -281,8 +282,12 @@ class Card_Counter(Optimal_Player):
         self.strat = strat
 
     def count(self, card: Card) -> None:
+        """Adjusts the current count bases on the strategy this player was initialized with"""
+
         self.seen_cards += 1
 
+        # we've seen an entire deck (52 cards)
+        # so we need to adjust the number of decks left to be delt
         if self.seen_cards == 52:
             self.seen_cards = 0
             self.left_decks -= 1
@@ -297,6 +302,9 @@ class Card_Counter(Optimal_Player):
             return 0
 
         num_decks = 1 if self.num_decks == 0 else self.num_decks
+        # compute the amout to bet based on the "true score"
+        # The true score is simply computed by dividing the current score
+        # by the number of decks left to be delt.
         bet = 100 * int(self.score / num_decks)
         return bet
 
