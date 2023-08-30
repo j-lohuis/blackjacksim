@@ -1,7 +1,6 @@
 import numpy as np
 from enum import Enum
 from deck import *
-from debug import *
 import random
 import sys
 

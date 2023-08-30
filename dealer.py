@@ -1,7 +1,6 @@
 import numpy as np
 from deck import *
 from player import *
-from debug import *
 
 class Dealer:
     def __init__(self, deck: Deck, players) -> None:
@@ -29,9 +28,7 @@ class Dealer:
     # Evaluates the whole strategy of the player and their bet
     # and returns array of hands with potential winnings
     def play_with(self, player: Player, bet: int):
-        debug(f"..... Playing with {player.name} ({id(player)})")
         if bet == 0:
-            debug(f"..... No bet")
             return None
 
         potential_winnings = [bet * 2]
@@ -46,7 +43,6 @@ class Dealer:
                 continue
 
             decision = player.decide(hands[i], self.dealer_cards[0])
-            debug(f"..... Decision={decision}")
             match decision:
                 case Action.HIT:
                     hands[i].append(self.deal(player))
@@ -76,13 +72,10 @@ class Dealer:
 
     def player_won(self, player_score: int, dealer_score: int) -> int:
         if player_score > 21:
-            debug("....... Player bust")
             return 0
         if player_score == dealer_score:
-            debug("....... Equal score")
             return 2
         if dealer_score > 21:
-            debug("....... Dealer bust")
             return 1
         return 1 if player_score > dealer_score else 0
 
@@ -91,14 +84,11 @@ class Dealer:
             self.budget_history[i] = np.append(self.budget_history[i], player.budget)
 
         # Players place a bet
-        debug("... Placing Bets")
         bets = []
         for player in self.players:
             bets.append(player.bet())
             player.budget -= bets[-1]
-            debug(f"... {player.name} has {player.budget} after betting")
 
-        debug("... Dealing to Dealer")
         # Deal cards to dealer
         self.dealer_cards = [self.deal(None), self.deck.pick()]
 
@@ -106,9 +96,7 @@ class Dealer:
         for i, player in enumerate(self.players):
             hands_and_wins.append(self.play_with(player, bets[i]))
 
-        debug(f"... {hands_and_wins}")
 
-        debug("... Dealer playing with himself")
         # Dealer plays with himself
         while score(self.dealer_cards) < 17:
             self.dealer_cards.append(self.deck.pick())
@@ -118,8 +106,6 @@ class Dealer:
 
         dealer_score = score(self.dealer_cards)
 
-        debug("... Determining winners")
-        debug(f"... Dealer = {self.dealer_cards} ({dealer_score})")
         # Determine winners
         for i, player in enumerate(self.players):
             if hands_and_wins[i] == None:
@@ -128,7 +114,6 @@ class Dealer:
             before = player.budget
             for j in range(len(hands_and_wins[i][0])):
                 player_score = score(hands_and_wins[i][0][j])
-                debug(f"... Player = {hands_and_wins[i][0][j]} ({player_score})")
                 result = self.player_won(player_score, dealer_score)
                 if dealer_score == 21 and len(self.dealer_cards) == 2:
                     result = 2 if player_score == 21 and len(hands_and_wins[i][0][j]) == 2 else 0
@@ -144,17 +129,13 @@ class Dealer:
                         self.draws[i] += 1
                         winnings = bets[i]
 
-                debug(f"..... {player.name} wins {winnings}")
                 # print(f"{winnings-bets[i]}")
                 player.result(winnings, hands_and_wins[i][0][j], self.dealer_cards)
-            debug(f"..... {player.name} has {player.budget} after round")
 
 
     def play(self, n_rounds: int) -> None:
         for i in range(n_rounds):
-            debug(f"Round {i+1}")
             if self.deck.should_shuffle():
-                debug("Shuffling")
                 self.deck.shuffle()
                 for p in self.players:
                     p.on_shuffle()
