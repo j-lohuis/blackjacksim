@@ -7,6 +7,7 @@ from player import *
 
 
 def play_alone():
+    """Starts game with cli player."""
     deck = Deck(6, 0.75)
     dealer = Dealer(deck, [CLI_Player(1000)])
 
@@ -14,6 +15,7 @@ def play_alone():
 
 
 def simulate(players, rounds, output_file):
+    """Starts simualtion with chosen strategies and plots the results."""
     deck = Deck(6, 0.75)
     dealer = Dealer(deck, players)
 
@@ -33,30 +35,7 @@ def simulate(players, rounds, output_file):
 
 
 def main():
-    """
-    Choose:
-        [0] Play by yourself
-        [1] Simulate
-
-<On play by yourself call play_alone()>
-
-
-<Only on Simulate:>
-
-    Choose which strategies to simulate:
-        [0] RandomPlayer
-        [1] ..
-        [2] ...
-
-    > 0 1 2
-
-    How many rounds?
-    > 1000000
-
-    Output plot to file?
-    > plot.png
-    ....
-    """
+    """Entry point of the application. Asks the user what to do and does it accordingly."""
     while True:
         print("Choose:")
         print("    [0] Play by yourself")
