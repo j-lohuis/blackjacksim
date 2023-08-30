@@ -13,27 +13,41 @@ class Action(Enum):
 
 
 class Player(object):
+    """Class representing a player. Super-class of all the other players."""
+
     def __init__(self, name: str, budget: int) -> None:
         self.name = name
         self.budget = budget
 
     def see_card(self, card: Card) -> None:
+        """Called by dealer everytime a card is drawn from the deck."""
         raise NotImplementedError("decide not implemented")
 
     def decide(self, cards, dealer_card: Card) -> Action:
+        """Decides the next action of the player.
+
+        Keyword arguments:
+        cards -- the players hand
+        dealer -- the dealers first card
+        """
         raise NotImplementedError("decide not implemented")
 
     def bet(self) -> int:
+        """Returns the amount the player bets."""
         raise NotImplementedError("bet not implemented")
 
     def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        """Gives the player the winnings of the round."""
         raise NotImplementedError("result not implemented")
 
     def on_shuffle(self) -> None:
+        """Informs the player when the dealer shuffles the deck."""
         raise NotImplementedError("result not implemented")
 
 
 class CLI_Player(Player):
+    """Interactive player to play from the command line."""
+
     def __init__(self, budget: int) -> None:
         Player.__init__(self, "CLI", budget)
         self.last_bet = 0
@@ -121,6 +135,8 @@ class CLI_Player(Player):
 # implemented after rules from
 # https://www.blackjackapprenticeship.com/blackjack-strategy-charts/
 class Optimal_Player(Player):
+    """Player that implements the theoretically optimal strategy without card counting."""
+
     def __init__(self, budget: int) -> None:
         Player.__init__(self, "Optimal Player", budget)
 
@@ -128,6 +144,9 @@ class Optimal_Player(Player):
         pass
 
     def decide(self, cards, dealer_card: Card) -> Action:
+        """Returns the optimal decision based on the rules from:
+        https://www.blackjackapprenticeship.com/blackjack-strategy-charts/ 
+        """
         hand_value = score(cards)
 
         strat = None
@@ -163,8 +182,11 @@ class Optimal_Player(Player):
                         return Action.HIT
 
         # soft totals and hard totals
+        # get the total sum of the players' hand
         value_sum = sum(card.value() for card in cards)
         num_aces = [card.value() for card in cards].count(11)
+
+        # checks if there is an ace in the hand that is counted as 11
         if value_sum - hand_value != num_aces * 10:
             # soft totals
             match hand_value:
@@ -311,6 +333,8 @@ class RandomPlayer(Player):
 
 
 class AveragePlayer(Player):
+    """Player simulating the behaviour of a average person that is pretty bad at Blackjack."""
+
     def __init__(self, budget: int) -> None:
         Player.__init__(self, "Average Player", budget)
         self.mood = "average"
@@ -321,9 +345,14 @@ class AveragePlayer(Player):
         pass
 
     def decide(self, cards, dealer_card: Card) -> Action:
-        # careful if overshot last round
-        # more risky if lost last round
-        # normal if won last round
+        """ Decides the next action based on the results of the last round
+
+        Plays: 
+        -> careful if overshot last round
+        -> more risky if lost last round
+        -> normal if won last round
+        """
+
         threshold = 16
         actions = []
         match(self.mood):
@@ -341,7 +370,7 @@ class AveragePlayer(Player):
             return Action.STAND
 
     def bet(self) -> int:
-
+        """Doubles bet from last round if lost to make up the losses"""
         match(self.last_result):
             case "lose":
                 self.last_bet = 2*self.last_bet
@@ -352,8 +381,11 @@ class AveragePlayer(Player):
 
         return self.last_bet
 
-    # simulate basic behaviour based on results of last round
     def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        """Simulate basic behaviour based on results of last round
+
+        Sets the "mood" depending on the result of the last round
+        """
         if score(player_cards) > 21:
             self.mood = "careful"
             self.last_result = "lose"

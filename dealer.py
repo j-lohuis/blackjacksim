@@ -2,6 +2,7 @@ import numpy as np
 from deck import *
 from player import *
 
+
 class Dealer:
     def __init__(self, deck: Deck, players) -> None:
         self.deck = deck
@@ -69,7 +70,6 @@ class Dealer:
 
         return (hands, potential_winnings)
 
-
     def player_won(self, player_score: int, dealer_score: int) -> int:
         if player_score > 21:
             return 0
@@ -81,7 +81,8 @@ class Dealer:
 
     def play_round(self):
         for i, player in enumerate(self.players):
-            self.budget_history[i] = np.append(self.budget_history[i], player.budget)
+            self.budget_history[i] = np.append(
+                self.budget_history[i], player.budget)
 
         # Players place a bet
         bets = []
@@ -95,7 +96,6 @@ class Dealer:
         hands_and_wins = list()
         for i, player in enumerate(self.players):
             hands_and_wins.append(self.play_with(player, bets[i]))
-
 
         # Dealer plays with himself
         while score(self.dealer_cards) < 17:
@@ -116,7 +116,8 @@ class Dealer:
                 player_score = score(hands_and_wins[i][0][j])
                 result = self.player_won(player_score, dealer_score)
                 if dealer_score == 21 and len(self.dealer_cards) == 2:
-                    result = 2 if player_score == 21 and len(hands_and_wins[i][0][j]) == 2 else 0
+                    result = 2 if player_score == 21 and len(
+                        hands_and_wins[i][0][j]) == 2 else 0
                 winnings = 0
                 match result:
                     case 0:
@@ -130,8 +131,8 @@ class Dealer:
                         winnings = bets[i]
 
                 # print(f"{winnings-bets[i]}")
-                player.result(winnings, hands_and_wins[i][0][j], self.dealer_cards)
-
+                player.result(
+                    winnings, hands_and_wins[i][0][j], self.dealer_cards)
 
     def play(self, n_rounds: int) -> None:
         for i in range(n_rounds):
@@ -146,6 +147,6 @@ class Dealer:
             self.play_round()
 
         for i, p in enumerate(self.players):
-            print(f"Total for player {p.name}: {self.wins[i]}/{self.draws[i]}/{self.losses[i]}")
+            print(
+                f"Total for player {p.name}: {self.wins[i]}/{self.draws[i]}/{self.losses[i]}")
         return self.budget_history
-
