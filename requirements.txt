@@ -1,6 +1,2 @@
-pytest
 numpy
-pandas
-scipy
 matplotlib
-seaborn

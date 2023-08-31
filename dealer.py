@@ -1,4 +1,5 @@
 import numpy as np
+
 from deck import *
 from player import *
 
@@ -9,6 +10,7 @@ class Dealer:
 
     It calls all specific methods from the players during play.
     """
+
     def __init__(self, deck: Deck, players) -> None:
         self.deck = deck
         self.players = players
@@ -31,8 +33,6 @@ class Dealer:
         self.show_to_others(card, to)
         return card
 
-    # Evaluates the whole strategy of the player and their bet
-    # and returns array of hands with potential winnings
     def play_with(self, player: Player, bet: int):
         """
         Plays one round with `player`, evaluating its strategy until no more cards can be delt.
@@ -191,4 +191,3 @@ class Dealer:
             print(
                 f"Total for player {p.name}: {self.wins[i]}/{self.draws[i]}/{self.losses[i]}")
         return self.budget_history
-

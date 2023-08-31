@@ -55,7 +55,7 @@ Here are a few pre-computed plots for various strategies and number of rounds pl
 ### All Players
 
 As you can see in both charts above the _Average Player_ is quite eratic while the _Random Player_ is just loosing money continuously.
-The _Average Player_ (or Gamblers fallacy player) doubles their bet after every loss. So theoretically they will always win back the losses. In practice you don't have an unlimited budget. As you can see in the bottom plot the player lost 5 million at one point.
+The _Average Player_ (or Gamblers fallacy player) doubles their bet after every loss. So theoretically they will always win back the losses. In practice you don't have an unlimited budget. As you can see in the bottom plot the player lost 50 million at one point.
 
 ![All Players 10k rounds](plots/10000_all.png)
 

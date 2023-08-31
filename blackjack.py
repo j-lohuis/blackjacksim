@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import random
 import re
+import matplotlib.pyplot as plt
+
 from dealer import *
 from deck import *
 from player import *

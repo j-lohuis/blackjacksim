@@ -1,13 +1,6 @@
 from enum import Enum
 import numpy as np
 
-# 0bSSVVVV
-# S = Suite
-# Spades = 0, Diamonds = 1, Clubs = 2, Hearts = 3
-#
-# V = Value
-# Ace = 0, 2 = 1, ..., Jack = 10, Queen = 11, King = 12
-
 
 class CardValue(Enum):
     """Represents every possible face value of a card"""
@@ -35,7 +28,13 @@ class Suite(Enum):
 
 
 class Card:
-    """Represents a card, i.e. both a suite and a value"""
+    """Represents a card, i.e. both a suite and a value
+
+    Card: 0bSSVVVV
+    S = Suite
+    V = Value
+    """
+
     def __init__(self, suite: Suite, value: CardValue) -> None:
         self.card = suite.value | value.value
 
@@ -86,6 +85,7 @@ class Card:
 
 class Deck:
     """Represents a collection of Cards"""
+
     def __init__(self, number_of_decks: int, shuffle_point: float) -> None:
         cards = []
         for i in range(number_of_decks):

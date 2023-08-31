@@ -1,8 +1,8 @@
-import numpy as np
-from enum import Enum
-from deck import *
 import random
 import sys
+from enum import Enum
+
+from deck import *
 
 
 class Action(Enum):
@@ -54,10 +54,10 @@ class CLI_Player(Player):
         self.last_bet = 0
 
     def see_card(self, card: Card) -> None:
-        # print(f"Seen card {card}")
         pass
 
     def decide(self, cards, dealer_card: Card) -> Action:
+        """Asks the user for an action."""
         print(f"Dealers card: {dealer_card}")
         print(f"Your hand ({score(cards)}):")
         for card in cards:
@@ -99,6 +99,7 @@ class CLI_Player(Player):
             print("Try again")
 
     def bet(self) -> int:
+        """Asks the user for a bet."""
         while True:
             print(
                 f"Place a bet, your current budget is {self.budget} or bet 0 to leave table:")
@@ -120,6 +121,7 @@ class CLI_Player(Player):
                 pass
 
     def result(self, winnings: int, player_cards, dealer_cards) -> None:
+        """Informs the user about the results."""
         self.budget += winnings
 
         if winnings > 0:
@@ -275,6 +277,8 @@ STRAT_10_COUNT = [0,  0, +1, +1, +1, +1, +1, +1, +1, +1, -2, +1]
 
 
 class Card_Counter(Optimal_Player):
+    """Player that performs card counting according to a passed in strategy"""
+
     def __init__(self, name: str, budget: int, num_decks: int, strat) -> None:
         Optimal_Player.__init__(self, budget)
         self.name = name
