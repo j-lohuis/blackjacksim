@@ -54,7 +54,8 @@ class CLI_Player(Player):
         self.last_bet = 0
 
     def see_card(self, card: Card) -> None:
-        print(f"Seen card {card}")
+        # print(f"Seen card {card}")
+        pass
 
     def decide(self, cards, dealer_card: Card) -> Action:
         print(f"Dealers card: {dealer_card}")
@@ -126,7 +127,9 @@ class CLI_Player(Player):
         else:
             print("Looks like you've lost")
 
+        print(f"Your cards: {player_cards}")
         print(f"Your score: {score(player_cards)}")
+        print(f"Dealer's cards: {dealer_cards}")
         print(f"Dealer's score: {score(dealer_cards)}")
 
     def on_shuffle(self) -> None:
@@ -315,6 +318,8 @@ class Card_Counter(Optimal_Player):
 
 
 class RandomPlayer(Player):
+    """Player that plays completely random moves and bets random amount"""
+
     def __init__(self, budget: int) -> None:
         Player.__init__(self, "Random Player", budget)
         self.last_bet = 0

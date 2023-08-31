@@ -64,7 +64,6 @@ def main():
         print("    [9] 10 card counter")
         print("  Example: 0 1 3 4 5")
 
-
         strat_list = ""
         while True:
             strat_list = input("> ").strip()
@@ -98,7 +97,7 @@ def main():
             else:
                 print("Invalid choice, try again")
 
-        output_file = input("Output plot to file?\n> ").strip()
+        output_file = input("Enter filename for the output plot: \n> ").strip()
 
         simulate(players, rounds, output_file)
 
