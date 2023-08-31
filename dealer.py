@@ -83,7 +83,7 @@ class Dealer:
                         hands.insert(i+1, [hands[i].pop()])
                         hands[i].append(self.deal(player))
                         hands[i+1].append(self.deal(player))
-                        potential_winnings.insert(i+1, bet)
+                        potential_winnings.insert(i+1, bet*2)
                         player.budget -= bet
                         i += 2
                     else:
@@ -92,7 +92,7 @@ class Dealer:
                         hands.append([hands[i].pop(), self.deal(player)])
                         hands[i].append(self.deal(player))
                         # add bet for the new hand
-                        potential_winnings.append(bet)
+                        potential_winnings.append(bet*2)
                         player.budget -= bet
 
         return (hands, potential_winnings)
